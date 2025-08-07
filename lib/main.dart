@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tse/ManualModeScreen.dart';
+import 'package:tse/TimerSettingsScreen.dart';
 import 'splash_screen.dart';
 import 'LoginScreen.dart';
 import 'signup_screen.dart';
@@ -21,7 +23,11 @@ class MyApp extends StatelessWidget {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),
+
+
       },
+
+      // home: ManualModeScreen(),
     );
   }
 }
