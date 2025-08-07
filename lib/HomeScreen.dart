@@ -23,6 +23,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool gasStatusOn = true;
   bool smartControlOn = false;
   bool energySaverOn = false;
+  bool aiModeOn = false;
+  bool manualModeOn = false;
 
   String currentTime = "";
   String weatherStatus = "Sunny Today!";
@@ -96,7 +98,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _startTemperatureSimulation() {
     _temperatureTimer = Timer.periodic(Duration(seconds: 5), (timer) {
       setState(() {
-        // Simulate temperature changes (45-55°C range)
         temperature = 45 + Random().nextInt(11);
       });
     });
@@ -112,9 +113,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-      _navAnimationController.forward().then((_) {
-        _navAnimationController.reset();
-      });
     }
   }
 
@@ -123,16 +121,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     switch (screenName) {
       case 'ai_mode':
-      targetScreen = AIModeScreen();
-        _showComingSoonDialog('AI Mode');
+        targetScreen = AIModeScreen();
         return;
       case 'manual_screen':
-      targetScreen = ManualModeScreen();
-        _showComingSoonDialog('Manual Screen');
+        targetScreen = ManualModeScreen();
         return;
       case 'time_screen':
-      targetScreen = TimerSettingsScreen();
-        _showComingSoonDialog('Time Screen');
+        targetScreen = TimerSettingsScreen();
         return;
       case 'UtilitySelectionScreen':
         targetScreen = UtilitySelectionScreen();
@@ -207,9 +202,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           children: [
             _buildCurrentCard(),
-            SizedBox(height: 16),
-            _buildControlsGrid(),
-            SizedBox(height: 20), // Extra padding for bottom navigation
+            SizedBox(height: 20),
+            _buildControlsList(),
+            SizedBox(height: 100), // Extra padding for bottom navigation
           ],
         ),
       ),
@@ -457,12 +452,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                currentTime,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  currentTime,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               _buildTemperatureGauge(),
@@ -559,217 +556,172 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildControlsGrid() {
-    return Container(
-      height: 450, // Fixed height to prevent overflow
-      child: Column(
-        children: [
-          // First row - Auto Mode (large) and AI Mode (small)
-          Expanded(
-            flex: 2,
+  Widget _buildControlsList() {
+    final controlButtons = [
+      {
+        'title': 'Auto Mode',
+        'subtitle': 'Automatic system control',
+        'icon': Icons.auto_awesome,
+        'isActive': autoModeOn,
+        'onToggle': (bool value) => setState(() => autoModeOn = value),
+        'onTap': () => _navigateToScreen('auto_mode'),
+        'size': 'large'
+      },
+      {
+        'title': 'AI Mode',
+        'subtitle': 'Smart AI control',
+        'icon': Icons.psychology,
+        'isActive': aiModeOn,
+        'onToggle': (bool value) => setState(() => aiModeOn = value),
+        'onTap': () => _navigateToScreen('ai_mode'),
+        'size': 'medium'
+      },
+      {
+        'title': 'Manual Mode',
+        'subtitle': 'Manual control',
+        'icon': Icons.touch_app,
+        'isActive': manualModeOn,
+        'onToggle': (bool value) => setState(() => manualModeOn = value),
+        'onTap': () => _navigateToScreen('manual_screen'),
+        'size': 'medium'
+      },
+      {
+        'title': 'Utility Select',
+        'subtitle': 'Choose utilities',
+        'icon': Icons.build_circle,
+        'isActive': utilitySelectOn,
+        'onToggle': (bool value) => setState(() => utilitySelectOn = value),
+        'onTap': () => _navigateToScreen('UtilitySelectionScreen'),
+        'size': 'medium'
+      },
+      {
+        'title': 'Timer Settings',
+        'subtitle': 'Schedule control',
+        'icon': Icons.schedule,
+        'isActive': timerOn,
+        'onToggle': (bool value) => setState(() => timerOn = value),
+        'onTap': () => _navigateToScreen('time_screen'),
+        'size': 'medium'
+      },
+      {
+        'title': 'Boost Mode',
+        'subtitle': 'Enhanced performance',
+        'icon': Icons.flash_on,
+        'isActive': boostModeOn,
+        'onToggle': (bool value) => setState(() => boostModeOn = value),
+        'onTap': () => _navigateToScreen('boost_mode'),
+        'size': 'medium'
+      },
+      {
+        'title': 'Smart Control',
+        'subtitle': 'Intelligent automation',
+        'icon': Icons.smart_button,
+        'isActive': smartControlOn,
+        'onToggle': (bool value) => setState(() => smartControlOn = value),
+        'onTap': () => _navigateToScreen('smart_control'),
+        'size': 'medium'
+      },
+      {
+        'title': 'Energy Saver',
+        'subtitle': 'Optimize consumption',
+        'icon': Icons.eco,
+        'isActive': energySaverOn,
+        'onToggle': (bool value) => setState(() => energySaverOn = value),
+        'onTap': () => _navigateToScreen('energy_saver'),
+        'size': 'medium'
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Controls',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[800],
+          ),
+        ),
+        SizedBox(height: 16),
+        _buildControlButton(controlButtons[0]),
+        SizedBox(height: 12),
+        for (int i = 1; i < controlButtons.length; i += 2)
+          Padding(
+            padding: EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                // Auto Mode - Large container (55% width)
-                Expanded(
-                  flex: 48,
-                  child: _buildControlCard({
-                    'title': 'Auto Mode',
-                    'subtitle': 'Automatic system control',
-                    'icon': Icons.auto_awesome,
-                    'getValue': () => autoModeOn,
-                    'setValue': (bool value) => setState(() => autoModeOn = value),
-                    'screen': 'auto_mode',
-                    'cardType': 'large',
-                  }),
-                ),
+                Expanded(child: _buildControlButton(controlButtons[i])),
                 SizedBox(width: 12),
-                // AI Mode - Smaller container (35% width)
                 Expanded(
-                  flex: 38,
-                  child: _buildControlCard({
-                    'title': 'AI Mode',
-                    'subtitle': 'Smart control',
-                    'icon': Icons.psychology,
-                    'getValue': () => false,
-                    'setValue': (bool value) {},
-                    'screen': 'ai_mode',
-                    'cardType': 'medium',
-                  }),
+                  child: i + 1 < controlButtons.length
+                      ? _buildControlButton(controlButtons[i + 1])
+                      : SizedBox(),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 18),
-          // Second row - Manual (medium) and Settings (small)
-          Expanded(
-            flex: 1,
-            child: Container(
-              width: double.infinity,
-              child: Row(
-                children: [
-                  // Manual - Medium container (40% width)
-                  Expanded(
-                    flex: 28,
-                    child: _buildControlCard({
-                      'title': 'Manual',
-                      'subtitle': 'Manual control',
-                      'icon': Icons.touch_app,
-                      'getValue': () => false,
-                      'setValue': (bool value) {},
-                      'screen': 'manual_screen',
-                      'cardType': 'small',
-                    }),
-                  ),
-                  SizedBox(width: 4),
-                  // Utility Select - Medium container (30% width)
-                  Expanded(
-                    flex: 33,
-                    child: _buildControlCard({
-                      'title': 'Utility',
-                      'subtitle': 'Select utilities',
-                      'icon': Icons.build_circle,
-                      'getValue': () => utilitySelectOn,
-                      'setValue': (bool value) => setState(() => utilitySelectOn = value),
-                      'screen': 'UtilitySelectionScreen',
-                      'cardType': 'small',
-                    }),
-                  ),
-                  SizedBox(width: 4),
-                  // Timer - Small container (30% width)
-                  Expanded(
-                    flex: 28,
-                    child: _buildControlCard({
-                      'title': 'Timer',
-                      'subtitle': 'Schedule',
-                      'icon': Icons.schedule,
-                      'getValue': () => timerOn,
-                      'setValue': (bool value) => setState(() => timerOn = value),
-                      'screen': 'time_screen',
-                      'cardType': 'small',
-                    }),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
-  Widget _buildControlCard(Map<String, dynamic> control) {
+  Widget _buildControlButton(Map<String, dynamic> control) {
     final title = control['title'] as String;
     final subtitle = control['subtitle'] as String;
     final icon = control['icon'] as IconData;
-    final getValue = control['getValue'] as bool Function();
-    final setValue = control['setValue'] as Function(bool);
-    final screen = control['screen'] as String;
-    final cardType = control['cardType'] as String;
-    final isActive = getValue();
+    final isActive = control['isActive'] as bool;
+    final onToggle = control['onToggle'] as Function(bool);
+    final onTap = control['onTap'] as VoidCallback;
+    final size = control['size'] as String;
 
-    // Different styling based on card type
-    Color cardColor = Colors.white;
-    Color shadowColor = Colors.grey.withOpacity(0.1);
-    double borderRadius = 16;
-    EdgeInsets padding = EdgeInsets.all(16);
-
-    if (cardType == 'large' && isActive) {
-      cardColor = primaryColor;
-      shadowColor = primaryColor.withOpacity(0.3);
-    } else if (cardType == 'medium' && isActive) {
-      cardColor = primaryColor.withOpacity(0.1);
-      shadowColor = primaryColor.withOpacity(0.2);
-    }
+    final isLarge = size == 'large';
+    final height = isLarge ? 130.0 : 190.0; // Doubled height for medium containers
 
     return GestureDetector(
-      onLongPress: () {
-        HapticFeedback.mediumImpact();
-        _navigateToScreen(screen);
-      },
       onTap: () {
-        // Quick tap to toggle switch if applicable
-        if (setValue != null) {
-          setValue(!isActive);
-        }
+        HapticFeedback.lightImpact();
+        onTap();
       },
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        padding: padding,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        height: height,
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(borderRadius),
-          border: isActive && cardType != 'large'
+          color: isActive ? primaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: isActive && !isLarge
               ? Border.all(color: primaryColor.withOpacity(0.3), width: 1)
               : null,
           boxShadow: [
             BoxShadow(
-              color: shadowColor,
-              blurRadius: 10,
+              color: isActive ? primaryColor.withOpacity(0.3) : Colors.grey.withOpacity(0.1),
+              blurRadius: 8,
               offset: Offset(0, 4),
             ),
           ],
         ),
-        child: _buildCardContent(title, subtitle, icon, isActive, setValue, cardType),
-      ),
-    );
-  }
-
-  Widget _buildCardContent(String title, String subtitle, IconData icon, bool isActive, Function(bool) onChanged, String cardType) {
-    // Color scheme based on card type and active state
-    Color textColor = Colors.black;
-    Color subtitleColor = Colors.grey[600]!;
-    Color iconColor = Colors.grey[600]!;
-
-    if (cardType == 'large' && isActive) {
-      textColor = Colors.white;
-      subtitleColor = Colors.white.withOpacity(0.8);
-      iconColor = Colors.white;
-    } else if (isActive) {
-      textColor = primaryColor;
-      iconColor = primaryColor;
-    }
-
-    if (cardType == 'large') {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: iconColor,
-            size: 36,
-          ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Icon(
+                  icon,
+                  color: isActive ? Colors.white : primaryColor,
+                  size: isLarge ? 32 : 24,
                 ),
-                SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: subtitleColor,
-                    fontSize: 12,
-                  ),
-                ),
-                SizedBox(height: 16),
-                Container(
-                  width: 48,
-                  height: 28,
+                Transform.scale(
+                  scale: isLarge ? 1.0 : 0.8,
                   child: Switch(
                     value: isActive,
-                    onChanged: onChanged,
-                    activeColor: cardType == 'large' && isActive ? Colors.white : primaryColor,
-                    activeTrackColor: cardType == 'large' && isActive
+                    onChanged: (value) {
+                      HapticFeedback.selectionClick();
+                      onToggle(value);
+                    },
+                    activeColor: isActive ? Colors.white : primaryColor,
+                    activeTrackColor: isActive
                         ? Colors.white.withOpacity(0.3)
                         : primaryColor.withOpacity(0.3),
                     inactiveThumbColor: Colors.grey[400],
@@ -778,109 +730,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ],
             ),
-          ),
-        ],
-      );
-    } else if (cardType == 'medium') {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(
-                icon,
-                color: iconColor,
-                size: 28,
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isActive ? Colors.white : primaryColor,
+                fontSize: isLarge ? 18 : 14,
+                fontWeight: FontWeight.w600,
               ),
-              Transform.scale(
-                scale: 0.85,
-                child: Switch(
-                  value: isActive,
-                  onChanged: onChanged,
-                  activeColor: primaryColor,
-                  activeTrackColor: primaryColor.withOpacity(0.3),
-                  inactiveThumbColor: Colors.grey[400],
-                  inactiveTrackColor: Colors.grey[300],
-                ),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 2),
+            ),
+            if (subtitle.isNotEmpty)
               Text(
                 subtitle,
                 style: TextStyle(
-                  color: subtitleColor,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
-    } else { // small cards
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(
-                icon,
-                color: iconColor,
-                size: 24,
-              ),
-              Transform.scale(
-                scale: 0.75,
-                child: Switch(
-                  value: isActive,
-                  onChanged: onChanged,
-                  activeColor: primaryColor,
-                  activeTrackColor: primaryColor.withOpacity(0.3),
-                  inactiveThumbColor: Colors.grey[400],
-                  inactiveTrackColor: Colors.grey[300],
-                ),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: subtitleColor,
-                  fontSize: 9,
+                  color: isActive
+                      ? Colors.white.withOpacity(0.8)
+                      : primaryColor.withOpacity(0.8),
+                  fontSize: isLarge ? 12 : 10,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
-        ],
-      );
-    }
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCompactBottomNavigation() {
@@ -899,12 +773,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildCompactNavItem(Icons.home_rounded, 0),
-          Container(width: 1, height: 30, color: Colors.grey[300]),
+          Container(width: 1, height: 25, color: Colors.grey[300]),
           _buildCompactNavItem(Icons.menu_rounded, 1),
-          Container(width: 1, height: 30, color: Colors.grey[300]),
+          Container(width: 1, height: 25, color: Colors.grey[300]),
           _buildCompactNavItem(Icons.settings_rounded, 2),
         ],
       ),
@@ -916,13 +789,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Expanded(
       child: GestureDetector(
-        onTap: () => _onNavItemTapped(index),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _onNavItemTapped(index);
+        },
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          padding: EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? primaryColor.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(25),
+          ),
           child: Icon(
             icon,
             color: isActive ? primaryColor : Colors.grey[500],
-            size: 28,
+            size: isActive ? 30 : 26,
           ),
         ),
       ),
