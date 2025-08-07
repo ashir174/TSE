@@ -122,13 +122,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     switch (screenName) {
       case 'ai_mode':
         targetScreen = AIModeScreen();
-        return;
+        break;
       case 'manual_screen':
         targetScreen = ManualModeScreen();
-        return;
+        break;
       case 'time_screen':
         targetScreen = TimerSettingsScreen();
-        return;
+        break;
       case 'UtilitySelectionScreen':
         targetScreen = UtilitySelectionScreen();
         break;
@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             _buildCurrentCard(),
             SizedBox(height: 20),
             _buildControlsList(),
-            SizedBox(height: 100), // Extra padding for bottom navigation
+            SizedBox(height: 100),
           ],
         ),
       ),
@@ -564,7 +564,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.auto_awesome,
         'isActive': autoModeOn,
         'onToggle': (bool value) => setState(() => autoModeOn = value),
-        'onTap': () => _navigateToScreen('auto_mode'),
+        'screenName': 'auto_mode',
         'size': 'large'
       },
       {
@@ -573,7 +573,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.psychology,
         'isActive': aiModeOn,
         'onToggle': (bool value) => setState(() => aiModeOn = value),
-        'onTap': () => _navigateToScreen('ai_mode'),
+        'screenName': 'ai_mode',
         'size': 'medium'
       },
       {
@@ -582,7 +582,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.touch_app,
         'isActive': manualModeOn,
         'onToggle': (bool value) => setState(() => manualModeOn = value),
-        'onTap': () => _navigateToScreen('manual_screen'),
+        'screenName': 'manual_screen',
         'size': 'medium'
       },
       {
@@ -591,7 +591,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.build_circle,
         'isActive': utilitySelectOn,
         'onToggle': (bool value) => setState(() => utilitySelectOn = value),
-        'onTap': () => _navigateToScreen('UtilitySelectionScreen'),
+        'screenName': 'UtilitySelectionScreen',
         'size': 'medium'
       },
       {
@@ -600,7 +600,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.schedule,
         'isActive': timerOn,
         'onToggle': (bool value) => setState(() => timerOn = value),
-        'onTap': () => _navigateToScreen('time_screen'),
+        'screenName': 'time_screen',
         'size': 'medium'
       },
       {
@@ -609,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.flash_on,
         'isActive': boostModeOn,
         'onToggle': (bool value) => setState(() => boostModeOn = value),
-        'onTap': () => _navigateToScreen('boost_mode'),
+        'screenName': 'boost_mode',
         'size': 'medium'
       },
       {
@@ -618,7 +618,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.smart_button,
         'isActive': smartControlOn,
         'onToggle': (bool value) => setState(() => smartControlOn = value),
-        'onTap': () => _navigateToScreen('smart_control'),
+        'screenName': 'smart_control',
         'size': 'medium'
       },
       {
@@ -627,7 +627,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         'icon': Icons.eco,
         'isActive': energySaverOn,
         'onToggle': (bool value) => setState(() => energySaverOn = value),
-        'onTap': () => _navigateToScreen('energy_saver'),
+        'screenName': 'energy_saver',
         'size': 'medium'
       },
     ];
@@ -671,16 +671,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final icon = control['icon'] as IconData;
     final isActive = control['isActive'] as bool;
     final onToggle = control['onToggle'] as Function(bool);
-    final onTap = control['onTap'] as VoidCallback;
+    final screenName = control['screenName'] as String; // Get screen name for navigation
     final size = control['size'] as String;
 
     final isLarge = size == 'large';
-    final height = isLarge ? 130.0 : 190.0; // Doubled height for medium containers
+    final height = isLarge ? 130.0 : 190.0;
 
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        onTap();
+        // Here you can either keep the original onTap logic or remove it if you only want long press to navigate
+      },
+      onLongPress: () {
+        HapticFeedback.heavyImpact();
+        _navigateToScreen(screenName);
       },
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),

@@ -37,7 +37,7 @@ class _AIModeScreenState extends State<AIModeScreen> {
             Text('Set Your Limit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 16.0),
             Card(
-              color: Colors.orange,
+              color: Color(0xFFF25A1F),
               child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Row(
@@ -46,19 +46,26 @@ class _AIModeScreenState extends State<AIModeScreen> {
                     Text('Upper Limit', style: TextStyle(color: Colors.white)),
                     Text(upperHour.toString().padLeft(2, '0'), style: TextStyle(color: Colors.white)),
                     Text(upperMinute.toString().padLeft(2, '0'), style: TextStyle(color: Colors.white)),
-                    DropdownButton<String>(
-                      value: upperPeriod,
-                      items: ["AM", "PM"].map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value, style: TextStyle(color: Colors.white)),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          upperPeriod = value!;
-                        });
-                      },
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        canvasColor: Colors.white, // Background color of the dropdown menu
+                      ),
+                      child: DropdownButton<String>(
+                        value: upperPeriod,
+                        iconEnabledColor: Colors.white,
+                        style: TextStyle(color: Colors.white), // Color of selected item on the orange card
+                        items: ["AM", "PM"].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value, style: TextStyle(color: Color(0xFFF25A1F))), // Color of menu items
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            upperPeriod = value!;
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -66,7 +73,7 @@ class _AIModeScreenState extends State<AIModeScreen> {
             ),
             SizedBox(height: 16.0),
             Card(
-              color: Colors.orange,
+              color: Color(0xFFF25A1F),
               child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Row(
@@ -75,19 +82,26 @@ class _AIModeScreenState extends State<AIModeScreen> {
                     Text('Lower Limit', style: TextStyle(color: Colors.white)),
                     Text(lowerHour.toString().padLeft(2, '0'), style: TextStyle(color: Colors.white)),
                     Text(lowerMinute.toString().padLeft(2, '0'), style: TextStyle(color: Colors.white)),
-                    DropdownButton<String>(
-                      value: lowerPeriod,
-                      items: ["AM", "PM"].map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value, style: TextStyle(color: Colors.white)),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          lowerPeriod = value!;
-                        });
-                      },
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        canvasColor: Colors.white, // Background color of the dropdown menu
+                      ),
+                      child: DropdownButton<String>(
+                        value: lowerPeriod,
+                        iconEnabledColor: Colors.white,
+                        style: TextStyle(color: Colors.white), // Color of selected item on the orange card
+                        items: ["AM", "PM"].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value, style: TextStyle(color: Color(0xFFF25A1F))), // Color of menu items
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            lowerPeriod = value!;
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -100,9 +114,14 @@ class _AIModeScreenState extends State<AIModeScreen> {
                 itemCount: timeSlots.length,
                 itemBuilder: (context, index) {
                   return Card(
-                    color: timeSlots[index]["isActive"] ? Colors.orange : Colors.white,
+                    color: timeSlots[index]["isActive"] ? Color(0xFFF25A1F) : Colors.white,
                     child: ListTile(
-                      title: Text(timeSlots[index]["time"]),
+                      title: Text(
+                        timeSlots[index]["time"],
+                        style: TextStyle(
+                          color: timeSlots[index]["isActive"] ? Colors.white : Colors.black,
+                        ),
+                      ),
                       trailing: Switch(
                         value: timeSlots[index]["isActive"],
                         onChanged: (value) {
