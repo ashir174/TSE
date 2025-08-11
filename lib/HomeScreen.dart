@@ -14,17 +14,23 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  String location = "Karachi";
+  String location = "Faisalabad";
   String userName = "Ashir";
+
+  // State variables for controls
   bool autoModeOn = true;
+  bool manualModeOn = false;
   bool utilitySelectOn = false;
-  bool boostModeOn = false;
   bool timerOn = false;
-  bool gasStatusOn = true;
+  bool boostModeOn = false;
   bool smartControlOn = false;
   bool energySaverOn = false;
-  bool aiModeOn = false;
-  bool manualModeOn = false;
+
+  bool gasStatusOn = true;
+  bool waterStatusOn = false;
+
+  // State variables for filter. The default filter is 'All'.
+  String selectedFilter = 'All';
 
   String currentTime = "";
   String weatherStatus = "Sunny Today!";
@@ -42,10 +48,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   static const Color lightGrey = Color(0xFFF5F5F5);
 
   final List<String> pakistanCities = [
-    'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad',
+    'Faisalabad', 'Lahore', 'Islamabad', 'Rawalpindi', 'Karachi',
     'Multan', 'Peshawar', 'Quetta', 'Gujranwala', 'Sialkot',
     'Bahawalpur', 'Sargodha', 'Sukkur', 'Larkana', 'Hyderabad',
     'Chakwal', 'Mardan', 'Kasur', 'Rahim Yar Khan', 'Sahiwal'
+  ];
+
+  // A complete list of all controls for easy filtering.
+  final List<Map<String, dynamic>> _allControls = [
+    {'title': 'Auto Mode', 'image': 'assets/images/automode.png', 'screenName': 'ai_mode'},
+    {'title': 'Manual Mode', 'icon': Icons.touch_app, 'screenName': 'manual_screen'},
+    {'title': 'Utility Select', 'image': 'assets/images/utility.png', 'screenName': 'UtilitySelectionScreen'},
+    {'title': 'Timer Settings', 'image': 'assets/images/timer.png', 'screenName': 'time_screen'},
+    {'title': 'Boost Mode', 'image': 'assets/images/boost.png', 'screenName': 'boost_mode'},
+    {'title': 'Smart Control', 'icon': Icons.smart_button, 'screenName': 'smart_control'},
+    {'title': 'Energy Saver', 'icon': Icons.eco, 'screenName': 'energy_saver'},
   ];
 
   @override
@@ -104,15 +121,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _onNavItemTapped(int index) {
-    if (currentNavIndex != index) {
-      setState(() {
-        currentNavIndex = index;
-      });
-      _pageController.animateToPage(
-        index,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+    if (index == 2) { // Settings button
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SettingsScreen()),
       );
+    } else {
+      if (currentNavIndex != index) {
+        setState(() {
+          currentNavIndex = index;
+        });
+        _pageController.animateToPage(
+          index,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -187,7 +211,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         children: [
           _buildHomePage(),
           _buildMenuPage(),
-          _buildSettingsPage(),
+          SettingsScreen()
+          // The settings page is no longer here. Navigation is handled directly.
         ],
       ),
       bottomNavigationBar: _buildCompactBottomNavigation(),
@@ -200,9 +225,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         physics: BouncingScrollPhysics(),
         padding: EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildCurrentCard(),
             SizedBox(height: 20),
+            _buildFilterSection(),
+            SizedBox(height: 16),
             _buildControlsList(),
             SizedBox(height: 100),
           ],
@@ -233,47 +261,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               fontSize: 16,
               color: Colors.grey[600],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingsPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.settings, size: 64, color: primaryColor),
-          SizedBox(height: 16),
-          Text(
-            'Settings Page',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Configure your preferences',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => _navigateToScreen('SettingsScreen'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-            child: Text('Open Settings'),
           ),
         ],
       ),
@@ -432,40 +419,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'CURRENT',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
-          ),
-          Text(
-            weatherStatus,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  currentTime,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              _buildTemperatureGauge(),
-            ],
-          ),
-          SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -473,28 +426,61 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Current Utility',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    'CURRENT',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                   Text(
-                    'Status',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                  Text(
-                    'Auto Status',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    weatherStatus,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              _buildTemperatureSection(),
+            ],
+          ),
+          SizedBox(height: 16),
+          Text(
+            currentTime,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 20),
+          // --- Updated status and utility section ---
+          Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Gas',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    'Current Utility',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
                   ),
-                  SizedBox(height: 8),
-                  Container(
+                  Text(
+                    'Gas',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Status',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  SizedBox(
                     width: 44,
                     height: 24,
                     child: Switch(
@@ -512,34 +498,57 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ],
               ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Auto Status',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  SizedBox(
+                    width: 44,
+                    height: 24,
+                    child: Switch(
+                      value: waterStatusOn,
+                      onChanged: (value) {
+                        setState(() {
+                          waterStatusOn = value;
+                        });
+                      },
+                      activeColor: Colors.white,
+                      activeTrackColor: Colors.white.withOpacity(0.3),
+                      inactiveThumbColor: Colors.white.withOpacity(0.7),
+                      inactiveTrackColor: Colors.white.withOpacity(0.2),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
+          // --- End of updated section ---
         ],
       ),
     );
   }
 
-  Widget _buildTemperatureGauge() {
+  Widget _buildTemperatureSection() {
     return Stack(
       alignment: Alignment.center,
       children: [
-        SizedBox(
-          width: 80,
-          height: 80,
-          child: CircularProgressIndicator(
-            value: temperature / 100,
-            strokeWidth: 3,
-            backgroundColor: Colors.white.withOpacity(0.3),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
+        Image.asset(
+          'assets/images/outter_temp.png',
+          width: 100,
+          height: 100,
         ),
         Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '$temperature°',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -547,7 +556,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               'temperature',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 10,
+                fontSize: 12,
               ),
             ),
           ],
@@ -556,97 +565,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildControlsList() {
-    final controlButtons = [
-      {
-        'title': 'Auto Mode',
-        'subtitle': 'Automatic system control',
-        'image': 'assets/images/automode.png',
-        'isActive': autoModeOn,
-        'onToggle': (bool value) => setState(() => autoModeOn = value),
-        'screenName': 'ai_mode',
-        'size': 'large'
-      },
-      {
-        'title': 'Manual Mode',
-        'subtitle': 'Manual control',
-        'icon': Icons.touch_app,
-        'isActive': manualModeOn,
-        'onToggle': (bool value) => setState(() => manualModeOn = value),
-        'screenName': 'manual_screen',
-        'size': 'medium'
-      },
-      {
-        'title': 'Utility Select',
-        'subtitle': 'Choose utilities',
-        'image': 'assets/images/utility.png',
-        'isActive': utilitySelectOn,
-        'onToggle': (bool value) => setState(() => utilitySelectOn = value),
-        'screenName': 'UtilitySelectionScreen',
-        'size': 'medium'
-      },
-      {
-        'title': 'Timer Settings',
-        'subtitle': 'Schedule control',
-        'image': 'assets/images/timer.png',
-        'isActive': timerOn,
-        'onToggle': (bool value) => setState(() => timerOn = value),
-        'screenName': 'time_screen',
-        'size': 'medium'
-      },
-      {
-        'title': 'Boost Mode',
-        'subtitle': 'Enhanced performance',
-        'image': 'assets/images/boost.png',
-        'isActive': boostModeOn,
-        'onToggle': (bool value) => setState(() => boostModeOn = value),
-        'screenName': 'boost_mode',
-        'size': 'medium'
-      },
-      {
-        'title': 'Smart Control',
-        'subtitle': 'Intelligent automation',
-        'icon': Icons.smart_button,
-        'isActive': smartControlOn,
-        'onToggle': (bool value) => setState(() => smartControlOn = value),
-        'screenName': 'smart_control',
-        'size': 'medium'
-      },
-      {
-        'title': 'Energy Saver',
-        'subtitle': 'Optimize consumption',
-        'icon': Icons.eco,
-        'isActive': energySaverOn,
-        'onToggle': (bool value) => setState(() => energySaverOn = value),
-        'screenName': 'energy_saver',
-        'size': 'medium'
-      },
-    ];
+  // The _buildStatusToggle method has been removed from here.
 
+  // Gets the list of controls based on the selected filter.
+  List<Map<String, dynamic>> _getFilteredControls() {
+    if (selectedFilter == 'All') {
+      return _allControls;
+    }
+    // Find the control that matches the selected filter title.
+    final filtered = _allControls.where((control) {
+      return control['title'] == selectedFilter;
+    }).toList();
+
+    return filtered;
+  }
+
+  Widget _buildControlsList() {
+    final filteredControls = _getFilteredControls();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Controls',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
-          ),
-        ),
-        SizedBox(height: 16),
-        _buildControlButton(controlButtons[0]),
+        // Always build the first control as the large one if it exists.
+        if (filteredControls.isNotEmpty)
+          _buildLargeControlButton(filteredControls.first),
         SizedBox(height: 12),
-        for (int i = 1; i < controlButtons.length; i += 2)
+        // Build the remaining controls in a two-column layout.
+        for (int i = 1; i < filteredControls.length; i += 2)
           Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
-                Expanded(child: _buildControlButton(controlButtons[i])),
+                Expanded(
+                  child: _buildSmallControlButton(filteredControls[i]),
+                ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: i + 1 < controlButtons.length
-                      ? _buildControlButton(controlButtons[i + 1])
+                  child: i + 1 < filteredControls.length
+                      ? _buildSmallControlButton(filteredControls[i + 1])
                       : SizedBox(),
                 ),
               ],
@@ -656,17 +611,108 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildControlButton(Map<String, dynamic> control) {
-    final title = control['title'] as String;
-    final subtitle = control['subtitle'] as String;
-    final isActive = control['isActive'] as bool;
-    final onToggle = control['onToggle'] as Function(bool);
-    final screenName = control['screenName'] as String;
-    final size = control['size'] as String;
+  bool _getControlState(String title) {
+    switch (title) {
+      case 'Auto Mode':
+        return autoModeOn;
+      case 'Manual Mode':
+        return manualModeOn;
+      case 'Utility Select':
+        return utilitySelectOn;
+      case 'Timer Settings':
+        return timerOn;
+      case 'Boost Mode':
+        return boostModeOn;
+      case 'Smart Control':
+        return smartControlOn;
+      case 'Energy Saver':
+        return energySaverOn;
+      default:
+        return false;
+    }
+  }
 
-    final isLarge = size == 'large';
-    final height = isLarge ? 130.0 : 190.0;
-    final double iconSize = isLarge ? 32 : 24;
+  void _toggleControlState(String title, bool value) {
+    setState(() {
+      switch (title) {
+        case 'Auto Mode':
+          autoModeOn = value;
+          break;
+        case 'Manual Mode':
+          manualModeOn = value;
+          break;
+        case 'Utility Select':
+          utilitySelectOn = value;
+          break;
+        case 'Timer Settings':
+          timerOn = value;
+          break;
+        case 'Boost Mode':
+          boostModeOn = value;
+          break;
+        case 'Smart Control':
+          smartControlOn = value;
+          break;
+        case 'Energy Saver':
+          energySaverOn = value;
+          break;
+      }
+    });
+  }
+
+  Widget _buildFilterSection() {
+    final filters = ['All', ..._allControls.map((e) => e['title'] as String)];
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final isSelected = selectedFilter == filter;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedFilter = filter;
+              });
+            },
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 200),
+              margin: EdgeInsets.only(right: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? primaryColor : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: isSelected
+                    ? [
+                  BoxShadow(
+                    color: primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ]
+                    : null,
+              ),
+              child: Center(
+                child: Text(
+                  filter,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLargeControlButton(Map<String, dynamic> control) {
+    final title = control['title'] as String;
+    final screenName = control['screenName'] as String;
+    final isActive = _getControlState(title);
 
     return GestureDetector(
       onTap: () {
@@ -675,14 +721,96 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
-        height: height,
+        height: 130,
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isActive ? primaryColor : Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: isActive ? primaryColor.withOpacity(0.3) : Colors.grey.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (control.containsKey('icon'))
+                  Icon(
+                    control['icon'] as IconData,
+                    color: isActive ? Colors.white : primaryColor,
+                    size: 32,
+                  )
+                else if (control.containsKey('image'))
+                  Image.asset(
+                    control['image'] as String,
+                    width: 32,
+                    height: 32,
+                    color: isActive ? Colors.white : primaryColor,
+                  ),
+                Transform.scale(
+                  scale: 1.0,
+                  child: Switch(
+                    value: isActive,
+                    onChanged: (value) {
+                      HapticFeedback.selectionClick();
+                      _toggleControlState(title, value);
+                    },
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.white.withOpacity(0.3),
+                    inactiveThumbColor: Colors.grey[400],
+                    inactiveTrackColor: Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isActive ? Colors.white : primaryColor,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              'Automatic system control',
+              style: TextStyle(
+                color: isActive ? Colors.white.withOpacity(0.8) : primaryColor.withOpacity(0.8),
+                fontSize: 12,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSmallControlButton(Map<String, dynamic> control) {
+    final title = control['title'] as String;
+    final screenName = control['screenName'] as String;
+    final isActive = _getControlState(title);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _navigateToScreen(screenName);
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        height: 190,
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isActive ? primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: isActive && !isLarge
-              ? Border.all(color: primaryColor.withOpacity(0.3), width: 1)
-              : null,
           boxShadow: [
             BoxShadow(
               color: isActive ? primaryColor.withOpacity(0.3) : Colors.grey.withOpacity(0.1),
@@ -702,22 +830,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Icon(
                     control['icon'] as IconData,
                     color: isActive ? Colors.white : primaryColor,
-                    size: iconSize,
+                    size: 24,
                   )
                 else if (control.containsKey('image'))
                   Image.asset(
                     control['image'] as String,
-                    width: iconSize,
-                    height: iconSize,
+                    width: 24,
+                    height: 24,
                     color: isActive ? Colors.white : primaryColor,
                   ),
                 Transform.scale(
-                  scale: isLarge ? 1.0 : 0.8,
+                  scale: 0.8,
                   child: Switch(
                     value: isActive,
                     onChanged: (value) {
                       HapticFeedback.selectionClick();
-                      onToggle(value);
+                      _toggleControlState(title, value);
                     },
                     activeColor: isActive ? Colors.white : primaryColor,
                     activeTrackColor: isActive
@@ -734,113 +862,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               title,
               style: TextStyle(
                 color: isActive ? Colors.white : primaryColor,
-                fontSize: isLarge ? 18 : 14,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (subtitle.isNotEmpty)
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: isActive
-                      ? Colors.white.withOpacity(0.8)
-                      : primaryColor.withOpacity(0.8),
-                  fontSize: isLarge ? 12 : 10,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-  Widget _BuildControlButton(Map<String, dynamic> control) {
-    final title = control['title'] as String;
-    final subtitle = control['subtitle'] as String;
-    final icon = control['icon'] as IconData;
-    final isActive = control['isActive'] as bool;
-    final onToggle = control['onToggle'] as Function(bool);
-    final screenName = control['screenName'] as String;
-    final size = control['size'] as String;
-
-    final isLarge = size == 'large';
-    final height = isLarge ? 130.0 : 190.0;
-
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        _navigateToScreen(screenName);
-      },
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 200),
-        height: height,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isActive ? primaryColor : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: isActive && !isLarge
-              ? Border.all(color: primaryColor.withOpacity(0.3), width: 1)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: isActive ? primaryColor.withOpacity(0.3) : Colors.grey.withOpacity(0.1),
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(
-                  icon,
-                  color: isActive ? Colors.white : primaryColor,
-                  size: isLarge ? 32 : 24,
-                ),
-                Transform.scale(
-                  scale: isLarge ? 1.0 : 0.8,
-                  child: Switch(
-                    value: isActive,
-                    onChanged: (value) {
-                      HapticFeedback.selectionClick();
-                      onToggle(value);
-                    },
-                    activeColor: isActive ? Colors.white : primaryColor,
-                    activeTrackColor: isActive
-                        ? Colors.white.withOpacity(0.3)
-                        : primaryColor.withOpacity(0.3),
-                    inactiveThumbColor: Colors.grey[400],
-                    inactiveTrackColor: Colors.grey[300],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
             Text(
-              title,
+              'Control system',
               style: TextStyle(
-                color: isActive ? Colors.white : primaryColor,
-                fontSize: isLarge ? 18 : 14,
-                fontWeight: FontWeight.w600,
+                color: isActive
+                    ? Colors.white.withOpacity(0.8)
+                    : primaryColor.withOpacity(0.8),
+                fontSize: 10,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            if (subtitle.isNotEmpty)
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: isActive
-                      ? Colors.white.withOpacity(0.8)
-                      : primaryColor.withOpacity(0.8),
-                  fontSize: isLarge ? 12 : 10,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
           ],
         ),
       ),

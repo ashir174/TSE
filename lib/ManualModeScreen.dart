@@ -12,22 +12,25 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
   bool heater2On = false;
 
   // State variables for the timer functionality
-  double timerMinutes = 30; // Use double for the slider
+  double timerMinutes = 15; // Initial timer value
   Timer? _timer;
   int _countdownSeconds = 0;
   bool _timerIsRunning = false;
 
+  // Variables for fast button press
+  Timer? _buttonPressTimer;
+  bool _isButtonHeld = false;
+
   @override
   void dispose() {
-    // Cancel the timer when the widget is disposed to prevent memory leaks
     _timer?.cancel();
+    _buttonPressTimer?.cancel();
     super.dispose();
   }
 
-  // Method to start the timer
   void _startTimer() {
-    if (_timerIsRunning) {
-      return; // Do nothing if the timer is already running
+    if (_timerIsRunning || timerMinutes <= 0) {
+      return;
     }
 
     setState(() {
@@ -46,17 +49,38 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
     });
   }
 
-  // Method to stop the timer
   void _stopTimer() {
     _timer?.cancel();
     setState(() {
       _timerIsRunning = false;
       _countdownSeconds = 0;
-      timerMinutes = 0;
     });
   }
 
-  // A helper to format the time for display
+  void _updateTimerMinutes(int change) {
+    setState(() {
+      double newTime = timerMinutes + change;
+      // Allow timerMinutes to be 0 or greater, no upper limit
+      if (newTime >= 0) {
+        timerMinutes = newTime;
+      }
+    });
+  }
+
+  void _startFastUpdate(int change) {
+    // Initial change on press
+    _updateTimerMinutes(change);
+    // Start a periodic timer for continuous updates
+    _buttonPressTimer = Timer.periodic(Duration(milliseconds: 200), (timer) {
+      _updateTimerMinutes(change);
+    });
+  }
+
+  void _stopFastUpdate() {
+    _buttonPressTimer?.cancel();
+    _isButtonHeld = false;
+  }
+
   String get _formattedTime {
     int minutes = (_countdownSeconds ~/ 60);
     int seconds = _countdownSeconds % 60;
@@ -65,11 +89,9 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Define a modern color scheme
     final accentColor = Color(0xFFF25A1F);
-    final inactiveColor = Colors.grey[200];
-    final activeTextColor = Colors.white;
     final inactiveTextColor = Colors.black87;
+    final activeTextColor = Colors.white;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -81,7 +103,7 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
             color: inactiveTextColor,
           ),
         ),
-        centerTitle: true,
+        // centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -94,7 +116,6 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Heater Cards
             Text(
               'Control Heaters',
               style: TextStyle(
@@ -117,7 +138,7 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
                         heater1On = value;
                       });
                     },
-                    accentColor: accentColor!,
+                    accentColor: accentColor,
                   ),
                 ),
                 SizedBox(width: 24),
@@ -137,7 +158,6 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
               ],
             ),
             SizedBox(height: 40),
-            // Timer Section
             Text(
               'Set Timer',
               style: TextStyle(
@@ -160,35 +180,53 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
               )
             else
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: Slider(
-                      value: timerMinutes,
-                      min: 0,
-                      max: 30,
-                      divisions: 30, // 1 minute increments
-                      label: '${timerMinutes.round()} min',
-                      activeColor: accentColor,
-                      inactiveColor: Colors.grey[350],
-                      onChanged: (value) {
-                        setState(() {
-                          timerMinutes = value;
-                        });
-                      },
+                  GestureDetector(
+                    onTapDown: (_) {
+                      _isButtonHeld = true;
+                      _startFastUpdate(-1);
+                    },
+                    onTapUp: (_) => _stopFastUpdate(),
+                    onTapCancel: () => _stopFastUpdate(),
+                    child: IconButton(
+                      iconSize: 36, // Smaller icon size
+                      icon: Icon(
+                        Icons.remove_circle_outline,
+                        color: timerMinutes > 0 ? accentColor : Colors.grey,
+                      ),
+                      onPressed: null, // onPressed is null since we're using GestureDetector
                     ),
                   ),
+                  SizedBox(width: 16), // Smaller spacing
                   Text(
                     '${timerMinutes.round()} min',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 36, // Smaller font size
                       fontWeight: FontWeight.bold,
                       color: inactiveTextColor,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  GestureDetector(
+                    onTapDown: (_) {
+                      _isButtonHeld = true;
+                      _startFastUpdate(1);
+                    },
+                    onTapUp: (_) => _stopFastUpdate(),
+                    onTapCancel: () => _stopFastUpdate(),
+                    child: IconButton(
+                      iconSize: 36, // Smaller icon size
+                      icon: Icon(
+                        Icons.add_circle_outline,
+                        color: accentColor,
+                      ),
+                      onPressed: null, // onPressed is null since we're using GestureDetector
                     ),
                   ),
                 ],
               ),
             SizedBox(height: 40),
-            // Action Buttons
             Row(
               children: [
                 Expanded(
@@ -201,7 +239,7 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
                       ),
                       elevation: 5,
                     ),
-                    onPressed: _timerIsRunning ? null : _startTimer, // Disable if timer is running
+                    onPressed: _timerIsRunning || timerMinutes == 0 ? null : _startTimer,
                     icon: Icon(Icons.timer, color: activeTextColor),
                     label: Text(
                       'Start Timer',
@@ -219,7 +257,7 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: _timerIsRunning ? _stopTimer : null, // Disable if timer is not running
+                    onPressed: _timerIsRunning ? _stopTimer : null,
                     icon: Icon(Icons.stop, color: inactiveTextColor),
                     label: Text(
                       'Stop Timer',
@@ -269,7 +307,6 @@ class _ManualModeScreenState extends State<ManualModeScreen> {
     required ValueChanged<bool> onToggle,
     required Color accentColor,
   }) {
-    // ... (This widget remains the same as in the previous response)
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,

@@ -53,7 +53,7 @@ class _TimerSettingsScreenState extends State<TimerSettingsScreen> {
             color: Colors.black,
           ),
         ),
-        centerTitle: true,
+        // centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(

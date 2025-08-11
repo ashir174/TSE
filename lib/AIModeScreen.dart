@@ -62,6 +62,18 @@ class _AIModeScreenState extends State<AIModeScreen> {
     );
   }
 
+  // New function to delete a timer from the list
+  void _deleteTimer(int index) {
+    final deletedTimer = timeSlots.removeAt(index);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Timer "${deletedTimer["time"]}" deleted.'),
+        backgroundColor: Colors.redAccent,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   // Helper widget for hour/minute selection using ListWheelScrollView
   Widget _buildTimePickerColumn({
     required int currentValue,
@@ -295,34 +307,49 @@ class _AIModeScreenState extends State<AIModeScreen> {
               child: ListView.builder(
                 itemCount: timeSlots.length,
                 itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8.0),
-                    color: timeSlots[index]["isActive"] ? primaryColor : Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
-                    child: ListTile(
-                      title: Text(
-                        timeSlots[index]["time"],
-                        style: TextStyle(
-                          color: timeSlots[index]["isActive"] ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.w500,
+                  return Dismissible(
+                    key: ObjectKey(timeSlots[index]), // Unique key for each item
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Icon(Icons.delete, color: Colors.white),
+                    ),
+                    direction: DismissDirection.endToStart, // Only allow swipe from right to left
+                    onDismissed: (direction) {
+                      setState(() {
+                        _deleteTimer(index); // Call the new delete function
+                      });
+                    },
+                    child: Card(
+                      margin: EdgeInsets.symmetric(vertical: 8.0),
+                      color: timeSlots[index]["isActive"] ? primaryColor : Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 2,
+                      child: ListTile(
+                        title: Text(
+                          timeSlots[index]["time"],
+                          style: TextStyle(
+                            color: timeSlots[index]["isActive"] ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      trailing: Switch(
-                        value: timeSlots[index]["isActive"],
-                        onChanged: (value) {
-                          setState(() {
-                            // Ensure only one timer can be active at a time
-                            for (var slot in timeSlots) {
-                              slot["isActive"] = false;
-                            }
-                            timeSlots[index]["isActive"] = value;
-                          });
-                        },
-                        activeColor: Colors.white,
-                        activeTrackColor: Colors.white.withOpacity(0.5),
-                        inactiveThumbColor: Colors.grey[400],
-                        inactiveTrackColor: Colors.grey[300],
+                        trailing: Switch(
+                          value: timeSlots[index]["isActive"],
+                          onChanged: (value) {
+                            setState(() {
+                              // Ensure only one timer can be active at a time
+                              for (var slot in timeSlots) {
+                                slot["isActive"] = false;
+                              }
+                              timeSlots[index]["isActive"] = value;
+                            });
+                          },
+                          activeColor: Colors.white,
+                          activeTrackColor: Colors.white.withOpacity(0.5),
+                          inactiveThumbColor: Colors.grey[400],
+                          inactiveTrackColor: Colors.grey[300],
+                        ),
                       ),
                     ),
                   );
