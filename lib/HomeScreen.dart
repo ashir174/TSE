@@ -561,20 +561,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {
         'title': 'Auto Mode',
         'subtitle': 'Automatic system control',
-        'icon': Icons.auto_awesome,
+        'image': 'assets/images/automode.png',
         'isActive': autoModeOn,
         'onToggle': (bool value) => setState(() => autoModeOn = value),
-        'screenName': 'auto_mode',
-        'size': 'large'
-      },
-      {
-        'title': 'AI Mode',
-        'subtitle': 'Smart AI control',
-        'icon': Icons.psychology,
-        'isActive': aiModeOn,
-        'onToggle': (bool value) => setState(() => aiModeOn = value),
         'screenName': 'ai_mode',
-        'size': 'medium'
+        'size': 'large'
       },
       {
         'title': 'Manual Mode',
@@ -588,7 +579,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {
         'title': 'Utility Select',
         'subtitle': 'Choose utilities',
-        'icon': Icons.build_circle,
+        'image': 'assets/images/utility.png',
         'isActive': utilitySelectOn,
         'onToggle': (bool value) => setState(() => utilitySelectOn = value),
         'screenName': 'UtilitySelectionScreen',
@@ -597,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {
         'title': 'Timer Settings',
         'subtitle': 'Schedule control',
-        'icon': Icons.schedule,
+        'image': 'assets/images/timer.png',
         'isActive': timerOn,
         'onToggle': (bool value) => setState(() => timerOn = value),
         'screenName': 'time_screen',
@@ -606,7 +597,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       {
         'title': 'Boost Mode',
         'subtitle': 'Enhanced performance',
-        'icon': Icons.flash_on,
+        'image': 'assets/images/boost.png',
         'isActive': boostModeOn,
         'onToggle': (bool value) => setState(() => boostModeOn = value),
         'screenName': 'boost_mode',
@@ -668,10 +659,109 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildControlButton(Map<String, dynamic> control) {
     final title = control['title'] as String;
     final subtitle = control['subtitle'] as String;
+    final isActive = control['isActive'] as bool;
+    final onToggle = control['onToggle'] as Function(bool);
+    final screenName = control['screenName'] as String;
+    final size = control['size'] as String;
+
+    final isLarge = size == 'large';
+    final height = isLarge ? 130.0 : 190.0;
+    final double iconSize = isLarge ? 32 : 24;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _navigateToScreen(screenName);
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        height: height,
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isActive ? primaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: isActive && !isLarge
+              ? Border.all(color: primaryColor.withOpacity(0.3), width: 1)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: isActive ? primaryColor.withOpacity(0.3) : Colors.grey.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (control.containsKey('icon'))
+                  Icon(
+                    control['icon'] as IconData,
+                    color: isActive ? Colors.white : primaryColor,
+                    size: iconSize,
+                  )
+                else if (control.containsKey('image'))
+                  Image.asset(
+                    control['image'] as String,
+                    width: iconSize,
+                    height: iconSize,
+                    color: isActive ? Colors.white : primaryColor,
+                  ),
+                Transform.scale(
+                  scale: isLarge ? 1.0 : 0.8,
+                  child: Switch(
+                    value: isActive,
+                    onChanged: (value) {
+                      HapticFeedback.selectionClick();
+                      onToggle(value);
+                    },
+                    activeColor: isActive ? Colors.white : primaryColor,
+                    activeTrackColor: isActive
+                        ? Colors.white.withOpacity(0.3)
+                        : primaryColor.withOpacity(0.3),
+                    inactiveThumbColor: Colors.grey[400],
+                    inactiveTrackColor: Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isActive ? Colors.white : primaryColor,
+                fontSize: isLarge ? 18 : 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (subtitle.isNotEmpty)
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: isActive
+                      ? Colors.white.withOpacity(0.8)
+                      : primaryColor.withOpacity(0.8),
+                  fontSize: isLarge ? 12 : 10,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _BuildControlButton(Map<String, dynamic> control) {
+    final title = control['title'] as String;
+    final subtitle = control['subtitle'] as String;
     final icon = control['icon'] as IconData;
     final isActive = control['isActive'] as bool;
     final onToggle = control['onToggle'] as Function(bool);
-    final screenName = control['screenName'] as String; // Get screen name for navigation
+    final screenName = control['screenName'] as String;
     final size = control['size'] as String;
 
     final isLarge = size == 'large';
@@ -680,10 +770,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        // Here you can either keep the original onTap logic or remove it if you only want long press to navigate
-      },
-      onLongPress: () {
-        HapticFeedback.heavyImpact();
         _navigateToScreen(screenName);
       },
       child: AnimatedContainer(

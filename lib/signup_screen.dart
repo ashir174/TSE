@@ -31,15 +31,15 @@ class SignUpScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 28),
                 _buildInputField(Icons.person, 'Full Name'),
-                const SizedBox(height: 15),
+                const SizedBox(height: 14),
                 _buildInputField(Icons.email, 'Email'),
-                const SizedBox(height: 15),
+                const SizedBox(height: 14),
                 _buildInputField(Icons.lock, 'Password', isPassword: true),
-                const SizedBox(height: 15),
+                const SizedBox(height: 14),
                 _buildInputField(Icons.lock_outline, 'Confirm Password', isPassword: true),
-                const SizedBox(height: 25),
+                const SizedBox(height: 23),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -58,7 +58,7 @@ class SignUpScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(height: 20),
+                // const SizedBox(height: 20),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
