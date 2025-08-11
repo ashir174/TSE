@@ -121,10 +121,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _onNavItemTapped(int index) {
-    if (index == 2) { // Settings button
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SettingsScreen()),
+    if (currentNavIndex != index) {
+      setState(() {
+        currentNavIndex = index;
+      });
+      _pageController.animateToPage(
+        index,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
       );
     } else {
       if (currentNavIndex != index) {

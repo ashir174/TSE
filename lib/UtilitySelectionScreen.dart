@@ -31,11 +31,16 @@ class _UtilitySelectionScreenState extends State<UtilitySelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Utility Selection'),
-        backgroundColor: Colors.white, // Adjusted for better visual
+        title: Text(
+          'Utility Selection', // Closing parenthesis was added here
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black), // Changed icon color
+          icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
